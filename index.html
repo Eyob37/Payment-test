@@ -1,138 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Google Drive Controller (JS Only)</title>
-
-  <!-- Google APIs -->
-  <script src="https://accounts.google.com/gsi/client"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    button {
-      margin: 5px 0;
-      padding: 8px 12px;
-      cursor: pointer;
-    }
-    ul {
-      margin-top: 10px;
-    }
-  </style>
+  <title>Google Drive API</title>
 </head>
 <body>
-
-<h2>Google Drive Control (JavaScript Only)</h2>
 
 <button onclick="signIn()">Sign In</button>
 <button onclick="listFiles()">List Files</button>
 
-<input type="file" id="fileInput">
-<button onclick="upload()">Upload File</button>
-
-<ul id="fileList"></ul>
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://apis.google.com/js/api.js"></script>
 
 <script>
-  /* ================= CONFIG ================= */
-  const CLIENT_ID = "789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com";
-  const SCOPES = "https://www.googleapis.com/auth/drive.file";
+const CLIENT_ID = "789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com";
+const API_KEY = "AIzaSyC2HJNSHQbJ6b3hpmborEq1tnxmj8BsQ30";
+const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
-  let tokenClient;
+let tokenClient;
 
-  /* ================= AUTH ================= */
-  function initAuth() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (tokenResponse) => {
-        gapi.client.setToken(tokenResponse);
-        console.log("Signed in");
-      },
+function initGapi() {
+  gapi.load("client", async () => {
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: [
+        "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+      ]
     });
-  }
+  });
 
-  function signIn() {
-    tokenClient.requestAccessToken();
-  }
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (tokenResponse) => {
+      gapi.client.setToken(tokenResponse);
+      console.log("Signed in");
+    }
+  });
+}
 
-  /* ================= LOAD DRIVE API ================= */
-  function loadDriveAPI() {
-    gapi.load("client", async () => {
-      await gapi.client.init({
-        discoveryDocs: [
-          "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-        ],
-      });
-      console.log("Drive API loaded");
-    });
-  }
+function signIn() {
+  tokenClient.requestAccessToken();
+}
 
-  /* ================= LIST FILES ================= */
-  async function listFiles() {
-    const res = await gapi.client.drive.files.list({
-      pageSize: 10,
-      fields: "files(id, name)",
-    });
+async function listFiles() {
+  const res = await gapi.client.drive.files.list({
+    pageSize: 10,
+    fields: "files(id, name)"
+  });
+  console.log(res.result.files);
+}
 
-    const list = document.getElementById("fileList");
-    list.innerHTML = "";
-
-    res.result.files.forEach(file => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        ${file.name}
-        <button onclick="deleteFile('${file.id}')">Delete</button>
-      `;
-      list.appendChild(li);
-    });
-  }
-
-  /* ================= UPLOAD FILE ================= */
-  async function upload() {
-    const file = document.getElementById("fileInput").files[0];
-    if (!file) return alert("Select a file first");
-
-    const metadata = {
-      name: file.name,
-      mimeType: file.type,
-    };
-
-    const form = new FormData();
-    form.append(
-      "metadata",
-      new Blob([JSON.stringify(metadata)], { type: "application/json" })
-    );
-    form.append("file", file);
-
-    const res = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + gapi.client.getToken().access_token,
-        },
-        body: form,
-      }
-    );
-
-    console.log(await res.json());
-    listFiles();
-  }
-
-  /* ================= DELETE FILE ================= */
-  async function deleteFile(fileId) {
-    await gapi.client.drive.files.delete({ fileId });
-    listFiles();
-  }
-
-  /* ================= INIT ================= */
-  window.onload = () => {
-    initAuth();
-    loadDriveAPI();
-  };
+initGapi();
 </script>
 
 </body>
