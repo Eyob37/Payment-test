@@ -12,11 +12,12 @@
 <script src="https://apis.google.com/js/api.js"></script>
 
 <script>
-const CLIENT_ID = "789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com";
-const API_KEY = "AIzaSyC2HJNSHQbJ6b3hpmborEq1tnxmj8BsQ30";
+const CLIENT_ID = "my client id";
+const API_KEY = "my api key";
 const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
 let tokenClient;
+let tokenResponse = null;
 
 function initGapi() {
   gapi.load("client", async () => {
@@ -26,6 +27,12 @@ function initGapi() {
         "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
       ]
     });
+    
+    // Check if we have a stored token
+    const storedToken = localStorage.getItem('drive_token');
+    if (storedToken) {
+      gapi.client.setToken(JSON.parse(storedToken));
+    }
   });
 
   tokenClient = google.accounts.oauth2.initTokenClient({
@@ -33,24 +40,86 @@ function initGapi() {
     scope: SCOPES,
     callback: (tokenResponse) => {
       gapi.client.setToken(tokenResponse);
-      console.log("Signed in");
+      localStorage.setItem('drive_token', JSON.stringify(tokenResponse));
+      console.log("Signed in successfully");
+    },
+    error_callback: (error) => {
+      console.error("OAuth error:", error);
+      if (error.type === 'popup_failed') {
+        // Fallback to redirect flow
+        const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+        const params = {
+          client_id: CLIENT_ID,
+          redirect_uri: window.location.origin,
+          response_type: 'token',
+          scope: SCOPES,
+          include_granted_scopes: 'true',
+          state: 'pass-through-value'
+        };
+        const url = oauth2Endpoint + '?' + new URLSearchParams(params);
+        window.location.href = url;
+      }
     }
   });
 }
 
 function signIn() {
-  tokenClient.requestAccessToken();
+  tokenClient.requestAccessToken({
+    prompt: 'consent'
+  });
 }
 
 async function listFiles() {
-  const res = await gapi.client.drive.files.list({
-    pageSize: 10,
-    fields: "files(id, name)"
-  });
-  console.log(res.result.files);
+  try {
+    if (!gapi.client.getToken()) {
+      alert("Please sign in first!");
+      return;
+    }
+    
+    const res = await gapi.client.drive.files.list({
+      pageSize: 10,
+      fields: "files(id, name)"
+    });
+    console.log(res.result.files);
+  } catch (error) {
+    console.error("Error listing files:", error);
+    if (error.status === 401) {
+      // Token expired, clear and re-auth
+      localStorage.removeItem('drive_token');
+      gapi.client.setToken(null);
+      signIn();
+    }
+  }
 }
 
-initGapi();
+// Handle OAuth redirect if using redirect flow
+function handleRedirect() {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get('access_token');
+  
+  if (accessToken) {
+    const tokenResponse = {
+      access_token: accessToken,
+      token_type: params.get('token_type'),
+      expires_in: parseInt(params.get('expires_in')) || 3600,
+      scope: params.get('scope')
+    };
+    
+    gapi.client.setToken(tokenResponse);
+    localStorage.setItem('drive_token', JSON.stringify(tokenResponse));
+    
+    // Clean URL
+    window.location.hash = '';
+    console.log("Signed in via redirect");
+  }
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+  initGapi();
+  handleRedirect();
+});
 </script>
 
 </body>
