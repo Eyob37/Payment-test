@@ -1,102 +1,206 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Public Drive Files</title>
+  <title>Google Drive Uploader</title>
+  <meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com">
 </head>
 <body>
 
-<h2>My Public Drive Files</h2>
-<div id="files"></div>
+<h2>Google Drive File Manager</h2>
 
-<!-- Upload Section -->
-<div id="upload-section">
-  <h3>Add New File</h3>
+<!-- Login Button -->
+<div id="signin-button"></div>
+
+<!-- Upload Section (Hidden until signed in) -->
+<div id="upload-section" style="display:none;">
+  <h3>Upload Files</h3>
   <input type="file" id="file-input" multiple>
-  <button onclick="uploadFile()">Upload to Drive</button>
-  <p id="upload-status"></p>
+  <button onclick="uploadToDrive()">Upload to Google Drive</button>
+  <p id="status"></p>
 </div>
 
+<!-- Files List -->
+<div id="files-container">
+  <h3>Files in Public Folder</h3>
+  <div id="files-list"></div>
+</div>
+
+<!-- Google APIs -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+
 <script>
+// Configuration - REPLACE THESE VALUES
+const CLIENT_ID = '789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com';
 const API_KEY = "AIzaSyC2HJNSHQbJ6b3hpmborEq1tnxmj8BsQ30";
 const FOLDER_ID = "1gpiHZSJXNOu6F8rTlalVrfuvspXZoVwk";
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-// Function to load and display files
-function loadFiles() {
-  const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}&fields=files(id,name,webViewLink,mimeType,size)`;
+let accessToken = null;
 
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const filesDiv = document.getElementById("files");
-      filesDiv.innerHTML = "";
-      
-      if (!data.files || data.files.length === 0) {
-        filesDiv.innerHTML = "<p>No files found.</p>";
-        return;
-      }
-
-      data.files.forEach(file => {
-        const fileDiv = document.createElement("div");
-        fileDiv.className = "file-item";
-        
-        // Create different links based on file type
-        if (file.mimeType === "application/vnd.google-apps.folder") {
-          fileDiv.innerHTML = `📁 <a href="${file.webViewLink}" target="_blank">${file.name}</a>`;
-        } else {
-          // Direct download link
-          const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
-          fileDiv.innerHTML = `📄 <a href="${downloadLink}" target="_blank">${file.name}</a>`;
-        }
-        
-        filesDiv.appendChild(fileDiv);
-      });
-    })
-    .catch(err => {
-      console.error("Fetch error:", err);
-      document.getElementById("files").innerHTML = "<p>Error loading files. Check API key and folder permissions.</p>";
+// Initialize Google APIs
+function initGoogleAuth() {
+  gapi.load('client', async () => {
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
     });
+    
+    // Initialize Google Identity Services
+    google.accounts.id.initialize({
+      client_id: CLIENT_ID,
+      callback: handleCredentialResponse,
+      scope: SCOPES
+    });
+    
+    // Render sign-in button
+    google.accounts.id.renderButton(
+      document.getElementById('signin-button'),
+      { theme: 'outline', size: 'large', type: 'standard' }
+    );
+    
+    loadPublicFiles();
+  });
 }
 
-// Upload function - NOTE: This requires OAuth 2.0 authentication
-async function uploadFile() {
+// Handle OAuth response
+function handleCredentialResponse(response) {
+  accessToken = response.credential;
+  document.getElementById('upload-section').style.display = 'block';
+  document.getElementById('signin-button').style.display = 'none';
+}
+
+// Load files from public folder (no authentication needed)
+async function loadPublicFiles() {
+  try {
+    const response = await gapi.client.drive.files.list({
+      q: `'${FOLDER_ID}' in parents and trashed = false`,
+      fields: 'files(id, name, mimeType, webViewLink, size)',
+      orderBy: 'modifiedTime desc'
+    });
+    
+    const files = response.result.files;
+    const filesList = document.getElementById('files-list');
+    
+    if (!files || files.length === 0) {
+      filesList.innerHTML = '<p>No files found.</p>';
+      return;
+    }
+    
+    let html = '<ul>';
+    files.forEach(file => {
+      const icon = file.mimeType.includes('folder') ? '📁' : '📄';
+      const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
+      const size = file.size ? ` (${formatBytes(file.size)})` : '';
+      
+      html += `
+        <li>
+          ${icon} 
+          <a href="${downloadLink}" target="_blank">${file.name}</a>${size}
+          <a href="${file.webViewLink}" target="_blank" style="margin-left:10px;">👁️ View</a>
+        </li>
+      `;
+    });
+    html += '</ul>';
+    
+    filesList.innerHTML = html;
+  } catch (error) {
+    console.error('Error loading files:', error);
+    document.getElementById('files-list').innerHTML = 
+      '<p>Error loading files. Make sure folder is public.</p>';
+  }
+}
+
+// Upload file to Google Drive
+async function uploadToDrive() {
   const fileInput = document.getElementById('file-input');
-  const status = document.getElementById('upload-status');
+  const status = document.getElementById('status');
   
   if (!fileInput.files.length) {
-    status.textContent = "Please select a file first.";
-    status.style.color = "red";
+    status.innerHTML = '<span style="color:red;">Please select a file first.</span>';
     return;
   }
-
-  status.textContent = "Uploading...";
-  status.style.color = "blue";
-
-  // IMPORTANT: For actual uploads, you need OAuth 2.0 authentication
-  // This is a simplified example - you'll need to implement proper auth
   
-  const formData = new FormData();
-  for (let i = 0; i < fileInput.files.length; i++) {
-    formData.append('files', fileInput.files[i]);
+  if (!accessToken) {
+    status.innerHTML = '<span style="color:red;">Please sign in first.</span>';
+    return;
   }
-
+  
+  const file = fileInput.files[0];
+  status.innerHTML = `<span style="color:blue;">Uploading "${file.name}"...</span>`;
+  
   try {
-    // This is where you'd send to your backend
-    status.textContent = "Upload functionality requires backend implementation with OAuth.";
-    status.style.color = "orange";
+    // Create metadata
+    const metadata = {
+      name: file.name,
+      parents: [FOLDER_ID]
+    };
     
-    // For a complete solution, you would:
-    // 1. Implement OAuth 2.0 authentication
-    // 2. Use the Google Drive API with proper access token
-    // 3. POST to: https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart
+    // Create FormData for upload
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('file', file);
+    
+    // Upload to Google Drive
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: new Headers({
+        'Authorization': `Bearer ${accessToken}`
+      }),
+      body: form
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    status.innerHTML = `
+      <span style="color:green;">
+        ✅ Upload successful! 
+        <a href="https://drive.google.com/file/d/${result.id}/view" target="_blank">View File</a>
+      </span>
+    `;
+    
+    // Clear file input and reload list
+    fileInput.value = '';
+    loadPublicFiles();
+    
   } catch (error) {
-    status.textContent = "Upload failed: " + error.message;
-    status.style.color = "red";
+    console.error('Upload error:', error);
+    status.innerHTML = `<span style="color:red;">Upload failed: ${error.message}</span>`;
   }
 }
 
-// Load files when page loads
-window.onload = loadFiles;
+// Helper function to format file sizes
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+}
+
+// Sign out function
+function signOut() {
+  google.accounts.id.disableAutoSelect();
+  accessToken = null;
+  document.getElementById('upload-section').style.display = 'none';
+  document.getElementById('signin-button').style.display = 'block';
+  document.getElementById('status').innerHTML = '';
+}
+
+// Initialize when page loads
+window.onload = initGoogleAuth;
 </script>
+
+<!-- Sign out button (optional) -->
+<div style="margin-top: 20px;">
+  <button onclick="signOut()" style="background: #f44336; color: white; padding: 10px; border: none; cursor: pointer;">
+    Sign Out
+  </button>
+</div>
 
 </body>
 </html>
