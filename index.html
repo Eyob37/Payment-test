@@ -17,14 +17,23 @@ const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+paren
 fetch(url)
   .then(res => res.json())
   .then(data => {
-    const ul = document.getElementById("files");
+    console.log(data); // debug
+
+    if (!data.files || data.files.length === 0) {
+      document.body.innerHTML += "<p>No files or access denied.</p>";
+      return;
+    }
+
     data.files.forEach(file => {
-      const li = document.createElement("li");
-      li.innerHTML = `<a href="${file.webViewLink}" target="_blank">${file.name}</a>`;
-      ul.appendChild(li);
+      const a = document.createElement("a");
+      a.href = file.webViewLink;
+      a.textContent = file.name;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      document.body.appendChild(document.createElement("br"));
     });
   })
-  .catch(err => console.error(err));
+  .catch(err => console.error("Fetch error:", err));
 </script>
 
 </body>
