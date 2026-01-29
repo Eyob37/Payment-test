@@ -168,8 +168,8 @@ async function uploadToDrive() {
     loadPublicFiles();
     
   } catch (error) {
-    console.error('Upload error:', error);
-    status.innerHTML = `<span style="color:red;">Upload failed: ${error.message}</span>`;
+    alert('Upload error:', JSON.stringify(error));
+    status.innerHTML = `<span style="color:red;">Upload failed: ${JSON.stringify(error)}</span>`;
   }
 }
 
