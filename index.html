@@ -1,62 +1,326 @@
 <!DOCTYPE html>  
 <html>  
 <head>  
-  <title>Google Drive Uploader</title>  
-  <meta name="google-signin-client_id" content="789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com">  
+  <title>Google Drive File Manager</title>  
+  <meta name="google-signin-client_id" content="789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    
+    h2, h3 {
+      color: #1a73e8;
+      margin-top: 0;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .button {
+      background-color: #1a73e8;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    .button:hover {
+      background-color: #0d62d9;
+    }
+    
+    .button-secondary {
+      background-color: #f1f3f4;
+      color: #5f6368;
+    }
+    
+    .button-secondary:hover {
+      background-color: #e8eaed;
+    }
+    
+    .button-danger {
+      background-color: #d93025;
+    }
+    
+    .button-danger:hover {
+      background-color: #c5221f;
+    }
+    
+    .button-success {
+      background-color: #188038;
+    }
+    
+    .button-success:hover {
+      background-color: #137333;
+    }
+    
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #fafbfc;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .file-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .file-icon {
+      font-size: 24px;
+      margin-right: 15px;
+      min-width: 40px;
+    }
+    
+    .file-info {
+      flex-grow: 1;
+    }
+    
+    .file-name {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    
+    .file-meta {
+      color: #5f6368;
+      font-size: 12px;
+      display: flex;
+      gap: 15px;
+    }
+    
+    .file-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .action-btn {
+      background: none;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #5f6368;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      background-color: #f8f9fa;
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
+    
+    input[type="file"] {
+      width: 100%;
+      padding: 15px;
+      border: 2px dashed #dadce0;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+    }
+    
+    input[type="file"]:hover {
+      border-color: #1a73e8;
+    }
+    
+    .status-message {
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    
+    .success {
+      background-color: #e6f4ea;
+      color: #137333;
+      border: 1px solid #b7e0c3;
+    }
+    
+    .error {
+      background-color: #fce8e6;
+      color: #c5221f;
+      border: 1px solid #f6c9c5;
+    }
+    
+    .warning {
+      background-color: #fef7e0;
+      color: #b06000;
+      border: 1px solid #fde293;
+    }
+    
+    .info {
+      background-color: #e8f0fe;
+      color: #1a73e8;
+      border: 1px solid #c2d7f0;
+    }
+    
+    .debug-panel {
+      background-color: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .debug-output {
+      max-height: 300px;
+      overflow-y: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #5f6368;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+      
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .file-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>  
 <body>  
+
+<div class="container">
+  <div class="header">
+    <h1>📁 Google Drive File Manager</h1>
+    <div class="user-info" id="user-info" style="display: none;">
+      <img id="user-avatar" width="32" height="32" style="border-radius: 50%;">
+      <span id="user-email"></span>
+    </div>
+  </div>
   
-<h2>Google Drive File Manager</h2>  
+  <p>Manage files in the public folder. Sign in with Google to upload, delete, and manage files.</p>
   
-<!-- Login Button -->  
-<div id="signin-button"></div>  
+  <!-- Login Button -->  
+  <div id="signin-button"></div>  
   
-<!-- Upload Section (Hidden until signed in) -->  
-<div id="upload-section" style="display:none;">  
-  <h3>Upload Files</h3>  
-  <input type="file" id="file-input" multiple>  
-  <button onclick="uploadToDrive()">Upload to Google Drive</button>  
-  <p id="status"></p>  
-</div>  
-  
-<!-- Debug Info -->  
-<div id="debug-info" style="background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px; display:none;">  
-  <h4>Debug Information</h4>  
-  <pre id="debug-output"></pre>  
-</div>  
-  
+  <!-- Upload Section (Hidden until signed in) -->  
+  <div id="upload-section" style="display:none;">  
+    <h3>📤 Upload Files</h3>  
+    <input type="file" id="file-input" multiple>  
+    <button class="button" onclick="uploadToDrive()">
+      <span>⬆️ Upload to Google Drive</span>
+    </button>
+    <p id="status" class="status-message"></p>  
+  </div>  
+</div>
+
 <!-- Files List -->  
-<div id="files-container">  
-  <h3>Files in Public Folder</h3>  
+<div class="container" id="files-container">  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h3 style="margin: 0;">📂 Files in Public Folder</h3>
+    <button class="button button-secondary" onclick="loadPublicFiles()">
+      <span>🔄 Refresh</span>
+    </button>
+  </div>
   <div id="files-list"></div>  
 </div>  
-  
+
+<!-- Debug Panel -->
+<div class="container debug-panel" id="debug-info" style="display:none;">  
+  <div class="debug-header">
+    <h4 style="margin: 0;">🔧 Debug Information</h4>
+    <button class="action-btn" onclick="clearDebug()">Clear</button>
+  </div>
+  <pre id="debug-output"></pre>
+</div>  
+
 <!-- Google APIs -->  
 <script src="https://apis.google.com/js/api.js"></script>  
 <script src="https://accounts.google.com/gsi/client"></script>  
-  
+
 <script>  
 // Configuration
 const CLIENT_ID = '789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com';  
 const API_KEY = "AIzaSyC2HJNSHQbJ6b3hpmborEq1tnxmj8BsQ30";  
 const FOLDER_ID = "1gpiHZSJXNOu6F8rTlalVrfuvspXZoVwk";  
-const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive';  
-  
-let accessToken = null;  
-  
+const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
+
+// OAuth 2.0 Token Client
+let tokenClient = null;
+let accessToken = null;
+let gapiInited = false;
+let gisInited = false;
+
+// User info
+let currentUser = null;
+
 // Debug logging
 function debugLog(message, data = null) {
   console.log(message, data || '');
-  const debugDiv = document.getElementById('debug-info');
   const debugOutput = document.getElementById('debug-output');
-  
-  if (debugDiv.style.display === 'none') {
-    debugDiv.style.display = 'block';
-  }
-  
+
   const timestamp = new Date().toLocaleTimeString();
   let logMessage = `${timestamp}: ${message}`;
-  
+
   if (data) {
     if (typeof data === 'object') {
       logMessage += '\n' + JSON.stringify(data, null, 2);
@@ -64,430 +328,444 @@ function debugLog(message, data = null) {
       logMessage += '\n' + data;
     }
   }
-  
+
   debugOutput.innerHTML = logMessage + '\n\n' + debugOutput.innerHTML;
 }
 
-// Initialize Google APIs  
-function initGoogleAuth() {  
-  debugLog('Initializing Google APIs...');
-  
-  gapi.load('client', async () => {  
+function clearDebug() {
+  document.getElementById('debug-output').innerHTML = '';
+}
+
+// Initialize Google APIs
+function gapiLoaded() {
+  gapi.load('client', async () => {
     try {
-      debugLog('Loading gapi client...');
-      
-      await gapi.client.init({  
-        apiKey: API_KEY,  
-        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']  
-      });  
-      
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+      });
+      gapiInited = true;
       debugLog('gapi client initialized');
-  
-      // Initialize Google Identity Services  
-      google.accounts.id.initialize({  
-        client_id: CLIENT_ID,  
-        callback: handleCredentialResponse,  
-        scope: SCOPES,
-        ux_mode: 'popup'
-      });  
-  
-      // Render sign-in button  
-      google.accounts.id.renderButton(  
-        document.getElementById('signin-button'),  
-        { theme: 'outline', size: 'large', type: 'standard', text: 'signin_with' }  
-      );  
-      
-      debugLog('Google Identity Services initialized');
-  
-      loadPublicFiles();  
+      maybeEnableButtons();
     } catch (error) {
-      debugLog('Error initializing Google APIs:', error);
+      debugLog('Error initializing gapi client:', error);
     }
-  });  
-}  
+  });
+}
+
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        accessToken = tokenResponse.access_token;
+        debugLog('Access token received');
+        
+        // Get user info
+        getUserInfo();
+        
+        // Show upload section
+        document.getElementById('upload-section').style.display = 'block';
+        document.getElementById('signin-button').style.display = 'none';
+        
+        // Load files with authentication
+        loadFilesWithAuth();
+      } else {
+        debugLog('Token response error:', tokenResponse);
+      }
+    },
+    error_callback: (error) => {
+      debugLog('Token client error:', error);
+      showStatus('Sign-in error: ' + error.message, 'error');
+    }
+  });
   
-// Handle OAuth response  
-function handleCredentialResponse(response) {  
-  debugLog('OAuth response received:', response);
-  
-  if (response.error) {
-    debugLog('OAuth error:', response.error);
-    alert('Sign-in failed: ' + response.error);
+  gisInited = true;
+  debugLog('Google Identity Services initialized');
+  maybeEnableButtons();
+}
+
+function maybeEnableButtons() {
+  if (gapiInited && gisInited) {
+    // Render sign-in button
+    const signinButton = document.getElementById('signin-button');
+    signinButton.innerHTML = `
+      <button class="button" onclick="handleAuthClick()">
+        <span>🔑 Sign in with Google</span>
+      </button>
+    `;
+    
+    // Load public files (no auth needed)
+    loadPublicFiles();
+  }
+}
+
+// Handle authentication
+function handleAuthClick() {
+  if (!tokenClient) {
+    showStatus('Google Identity Services not initialized', 'error');
     return;
   }
   
-  // Get the access token from the credential response
-  accessToken = response.credential || response.access_token;
+  showStatus('Requesting authorization...', 'info');
+  tokenClient.requestAccessToken();
+}
+
+// Get user information
+async function getUserInfo() {
+  if (!accessToken) return;
   
-  if (!accessToken) {
-    debugLog('No access token found in response');
-    // Try to get token from auth2 if available
-    if (window.gapi && gapi.auth2) {
-      const auth2 = gapi.auth2.getAuthInstance();
-      if (auth2) {
-        const user = auth2.currentUser.get();
-        const authResponse = user.getAuthResponse();
-        accessToken = authResponse.access_token;
-        debugLog('Got access token from gapi.auth2:', accessToken ? 'Yes' : 'No');
+  try {
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    
+    if (response.ok) {
+      currentUser = await response.json();
+      debugLog('User info:', currentUser);
+      
+      // Update UI with user info
+      document.getElementById('user-info').style.display = 'flex';
+      document.getElementById('user-email').textContent = currentUser.email;
+      if (currentUser.picture) {
+        document.getElementById('user-avatar').src = currentUser.picture;
       }
     }
+  } catch (error) {
+    debugLog('Error getting user info:', error);
   }
-  
-  debugLog('Access token status:', accessToken ? 'Token obtained' : 'No token');
-  
-  document.getElementById('upload-section').style.display = 'block';  
-  document.getElementById('signin-button').style.display = 'none';  
-  
-  // Test the access token
-  setTimeout(testDriveAccess, 1000);
-}  
-  
-// Test Drive API access
-async function testDriveAccess() {
+}
+
+// Load files with authentication (for operations that need auth)
+async function loadFilesWithAuth() {
   if (!accessToken) {
-    debugLog('No access token available for testing');
+    debugLog('No access token for authenticated file loading');
     return;
   }
   
   try {
-    debugLog('Testing Drive API access...');
-    
-    // Simple test to check if we can access Drive API
-    const testResponse = await fetch('https://www.googleapis.com/drive/v3/about?fields=user,storageQuota', {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      }
+    const response = await gapi.client.drive.files.list({
+      q: `'${FOLDER_ID}' in parents and trashed = false`,
+      fields: 'files(id, name, mimeType, webViewLink, size, modifiedTime, permissions)',
+      orderBy: 'modifiedTime desc',
+      pageSize: 50
     });
     
-    const result = await testResponse.json();
-    debugLog('Drive API test result:', result);
-    
-    if (result.error) {
-      debugLog('Drive API access error:', result.error);
-      document.getElementById('status').innerHTML = 
-        `<span style="color:orange;">Warning: Limited access. Error: ${result.error.message}</span>`;
-    } else {
-      debugLog('Drive API access successful');
-      document.getElementById('status').innerHTML = 
-        `<span style="color:green;">✓ Connected as: ${result.user.emailAddress}</span>`;
-    }
+    return response.result.files;
   } catch (error) {
-    debugLog('Drive API test failed:', error);
+    debugLog('Error loading files with auth:', error);
+    return null;
   }
 }
 
-// Load files from public folder (no authentication needed)  
-async function loadPublicFiles() {  
-  try {  
-    debugLog('Loading public files from folder:', FOLDER_ID);
+// Load files from public folder (no authentication needed)
+async function loadPublicFiles() {
+  try {
+    showStatus('Loading files...', 'info');
     
-    const response = await gapi.client.drive.files.list({  
-      q: `'${FOLDER_ID}' in parents and trashed = false`,  
-      fields: 'files(id, name, mimeType, webViewLink, size, modifiedTime)',  
-      orderBy: 'modifiedTime desc',
-      pageSize: 20
-    });  
-  
-    const files = response.result.files;  
-    const filesList = document.getElementById('files-list');  
-    
-    debugLog('Files loaded:', files ? files.length : 0);
-  
-    if (!files || files.length === 0) {  
-      filesList.innerHTML = '<p>No files found.</p>';  
-      return;  
-    }  
-  
-    let html = '<ul style="list-style: none; padding: 0;">';  
-    files.forEach(file => {  
-      const icon = file.mimeType.includes('folder') ? '📁' : 
-                   file.mimeType.includes('image') ? '🖼️' :
-                   file.mimeType.includes('pdf') ? '📕' :
-                   file.mimeType.includes('video') ? '🎬' : '📄';
-      const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;  
-      const size = file.size ? ` (${formatBytes(file.size)})` : '';  
-      const modified = file.modifiedTime ? new Date(file.modifiedTime).toLocaleDateString() : '';
-      
-      html += `  
-        <li style="margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 5px;">  
-          <div style="font-size: 20px; float: left; margin-right: 10px;">${icon}</div>  
-          <div style="margin-left: 40px;">  
-            <strong>${file.name}</strong>${size}<br>  
-            <small style="color: #666;">Modified: ${modified}</small><br>  
-            <a href="${downloadLink}" target="_blank" style="color: #1a73e8; text-decoration: none;">⬇️ Download</a>  
-            <a href="${file.webViewLink}" target="_blank" style="color: #1a73e8; text-decoration: none; margin-left: 15px;">👁️ View in Drive</a>  
-          </div>  
-          <div style="clear: both;"></div>  
-        </li>  
-      `;  
-    });  
-    html += '</ul>';  
-  
-    filesList.innerHTML = html;  
-  } catch (error) {  
-    debugLog('Error loading files:', error);  
-    document.getElementById('files-list').innerHTML =   
-      `<p style="color: red;">Error loading files: ${error.message}</p>  
-       <p><small>Make sure folder is public and accessible.</small></p>`;  
-  }  
-}  
-  
-// Upload file to Google Drive  
-async function uploadToDrive() {  
-  const fileInput = document.getElementById('file-input');  
-  const status = document.getElementById('status');  
-  
-  if (!fileInput.files.length) {  
-    status.innerHTML = '<span style="color:red;">Please select a file first.</span>';  
-    return;  
-  }  
-  
-  if (!accessToken) {  
-    status.innerHTML = '<span style="color:red;">Please sign in first.</span>';  
-    return;  
-  }  
-  
-  const file = fileInput.files[0];  
-  status.innerHTML = `<span style="color:blue;">Uploading "${file.name}"... (Size: ${formatBytes(file.size)})</span>`;  
-  
-  debugLog('Starting upload:', {
-    fileName: file.name,
-    fileType: file.type,
-    fileSize: file.size,
-    accessToken: accessToken.substring(0, 20) + '...'
-  });
-  
-  try {  
-    // Create metadata  
-    const metadata = {  
-      name: file.name,  
-      parents: [FOLDER_ID],
-      mimeType: file.type || 'application/octet-stream'
-    };  
-    
-    debugLog('Upload metadata:', metadata);
-    
-    // Create FormData for upload  
-    const form = new FormData();  
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));  
-    form.append('file', file);  
-    
-    // Log FormData contents (for debugging)
-    debugLog('FormData created');
-    
-    // Upload to Google Drive  
-    const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size';
-    
-    debugLog('Sending request to:', uploadUrl);
-    
-    const response = await fetch(uploadUrl, {  
-      method: 'POST',  
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      },  
-      body: form  
-    });  
-    
-    debugLog('Response received:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-    
-    const responseText = await response.text();  
-    debugLog('Response text:', responseText);
-    
-    if (!response.ok) {  
-      let errorMessage = `Upload failed: ${response.status} ${response.statusText}`;  
-      try {  
-        const errorJson = JSON.parse(responseText);  
-        errorMessage += ` - ${errorJson.error?.message || JSON.stringify(errorJson)}`;  
-        
-        // Specific error handling
-        if (errorJson.error?.code === 403) {
-          errorMessage += '\n\nPossible causes:\n';
-          errorMessage += '1. Drive API not enabled in Google Cloud Console\n';
-          errorMessage += '2. Insufficient OAuth scopes\n';
-          errorMessage += '3. Token expired or invalid\n';
-          errorMessage += '4. Folder permissions issue';
-        }
-        
-      } catch (e) {  
-        errorMessage += ` - ${responseText}`;  
-      }  
-      throw new Error(errorMessage);  
-    }  
-    
-    const result = JSON.parse(responseText);  
-    debugLog('Upload successful:', result);
-    
-    status.innerHTML = `  
-      <span style="color:green;">  
-        ✅ Upload successful!<br>  
-        <small>  
-          File: ${result.name}<br>  
-          <a href="https://drive.google.com/file/d/${result.id}/view" target="_blank">View in Drive</a> |  
-          <a href="https://drive.google.com/uc?export=download&id=${result.id}" target="_blank">Download</a>  
-        </small>  
-      </span>  
-    `;  
-    
-    // Clear file input and reload list  
-    fileInput.value = '';  
-    loadPublicFiles();  
-  
-  } catch (error) {  
-    console.error('Upload error:', error);  
-    debugLog('Upload failed with error:', error);
-    
-    let errorHtml = `<span style="color:red;">Upload failed: ${error.message}</span>`;  
-    
-    // Add troubleshooting tips
-    if (error.message.includes('403')) {
-      errorHtml += `<br><br><small style="color: #666;">
-        <strong>Troubleshooting tips:</strong><br>
-        1. Go to <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank">Google Cloud Console</a><br>
-        2. Enable Google Drive API<br>
-        3. Make sure your OAuth client has the correct scopes<br>
-        4. Add your email as a test user in OAuth consent screen
-      </small>`;
-    } else if (error.message.includes('401')) {
-      errorHtml += `<br><br><small style="color: #666;">Token may have expired. Try signing out and back in.</small>`;
+    // Try authenticated load first
+    let files = null;
+    if (accessToken) {
+      files = await loadFilesWithAuth();
     }
     
-    status.innerHTML = errorHtml;  
-  }  
-}  
-  
-// Alternative upload method using gapi.client directly
-async function uploadToDriveAlternative() {
+    // Fall back to public access if no auth or auth failed
+    if (!files) {
+      // Use API key for public folder access
+      const response = await gapi.client.drive.files.list({
+        q: `'${FOLDER_ID}' in parents and trashed = false`,
+        fields: 'files(id, name, mimeType, webViewLink, size, modifiedTime)',
+        orderBy: 'modifiedTime desc',
+        pageSize: 50
+      });
+      
+      files = response.result.files;
+    }
+    
+    const filesList = document.getElementById('files-list');
+    
+    debugLog('Files loaded:', files ? files.length : 0);
+    
+    if (!files || files.length === 0) {
+      filesList.innerHTML = '<div class="status-message info">No files found in the folder.</div>';
+      return;
+    }
+    
+    let html = '<ul class="file-list">';
+    files.forEach(file => {
+      const icon = getFileIcon(file.mimeType);
+      const downloadLink = `https://drive.google.com/uc?export=download&id=${file.id}`;
+      const size = file.size ? formatBytes(file.size) : 'Unknown size';
+      const modified = file.modifiedTime ? new Date(file.modifiedTime).toLocaleString() : 'Unknown';
+      
+      html += `
+        <li class="file-item" id="file-${file.id}">
+          <div class="file-icon">${icon}</div>
+          <div class="file-info">
+            <div class="file-name">${file.name}</div>
+            <div class="file-meta">
+              <span>📏 ${size}</span>
+              <span>📅 ${modified}</span>
+              <span>📄 ${file.mimeType}</span>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button class="action-btn" onclick="window.open('${file.webViewLink}', '_blank')">
+              👁️ View
+            </button>
+            <button class="action-btn" onclick="window.open('${downloadLink}', '_blank')">
+              ⬇️ Download
+            </button>
+            ${accessToken ? `
+            <button class="action-btn" onclick="deleteFile('${file.id}', '${file.name}')" style="color: #d93025;">
+              🗑️ Delete
+            </button>
+            ` : ''}
+          </div>
+        </li>
+      `;
+    });
+    html += '</ul>';
+    
+    filesList.innerHTML = html;
+    showStatus(`Loaded ${files.length} files`, 'success');
+    
+  } catch (error) {
+    debugLog('Error loading files:', error);
+    document.getElementById('files-list').innerHTML = `
+      <div class="status-message error">
+        Error loading files: ${error.message}<br>
+        <small>Make sure the folder is publicly accessible.</small>
+      </div>
+    `;
+  }
+}
+
+// Get appropriate icon for file type
+function getFileIcon(mimeType) {
+  if (mimeType.includes('folder')) return '📁';
+  if (mimeType.includes('image')) return '🖼️';
+  if (mimeType.includes('pdf')) return '📕';
+  if (mimeType.includes('word')) return '📝';
+  if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊';
+  if (mimeType.includes('video')) return '🎬';
+  if (mimeType.includes('audio')) return '🎵';
+  if (mimeType.includes('zip') || mimeType.includes('compressed')) return '🗜️';
+  return '📄';
+}
+
+// Upload file to Google Drive
+async function uploadToDrive() {
   const fileInput = document.getElementById('file-input');
   const status = document.getElementById('status');
   
   if (!fileInput.files.length) {
-    status.innerHTML = '<span style="color:red;">Please select a file first.</span>';
+    showStatus('Please select a file first.', 'error');
     return;
   }
   
-  const file = fileInput.files[0];
-  status.innerHTML = `<span style="color:blue;">Uploading "${file.name}" (Alternative method)...</span>`;
-  
-  const reader = new FileReader();
-  
-  reader.onload = async function(e) {
-    try {
-      const boundary = '-------314159265358979323846';
-      const delimiter = "\r\n--" + boundary + "\r\n";
-      const close_delim = "\r\n--" + boundary + "--";
-      
-      const metadata = {
-        'name': file.name,
-        'parents': [FOLDER_ID],
-        'mimeType': file.type
-      };
-      
-      const multipartRequestBody =
-        delimiter +
-        'Content-Type: application/json\r\n\r\n' +
-        JSON.stringify(metadata) +
-        delimiter +
-        'Content-Type: ' + file.type + '\r\n\r\n' +
-        e.target.result +
-        close_delim;
-      
-      const request = gapi.client.request({
-        'path': '/upload/drive/v3/files',
-        'method': 'POST',
-        'params': {'uploadType': 'multipart'},
-        'headers': {
-          'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-        },
-        'body': multipartRequestBody
-      });
-      
-      const response = await request;
-      debugLog('Alternative upload successful:', response);
-      status.innerHTML = `<span style="color:green;">✅ Upload successful!</span>`;
-      loadPublicFiles();
-      
-    } catch (error) {
-      debugLog('Alternative upload failed:', error);
-      status.innerHTML = `<span style="color:red;">Error: ${error.result?.error?.message || error.message}</span>`;
-    }
-  };
-  
-  reader.readAsBinaryString(file);
-}
-
-// Helper function to format file sizes  
-function formatBytes(bytes, decimals = 2) {  
-  if (bytes === 0) return '0 Bytes';  
-  const k = 1024;  
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];  
-  const i = Math.floor(Math.log(bytes) / Math.log(k));  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];  
-}  
-  
-// Sign out function  
-function signOut() {  
-  debugLog('Signing out...');
-  
-  // Clear Google Sign-In
-  if (google.accounts.id) {
-    google.accounts.id.disableAutoSelect();
+  if (!accessToken) {
+    showStatus('Please sign in first.', 'error');
+    return;
   }
   
-  // Clear tokens and state
-  accessToken = null;
+  const files = Array.from(fileInput.files);
+  let uploadedCount = 0;
+  let failedCount = 0;
   
-  // Reset UI
-  document.getElementById('upload-section').style.display = 'none';  
-  document.getElementById('signin-button').style.display = 'block';  
-  document.getElementById('status').innerHTML = '';
-  document.getElementById('debug-info').style.display = 'none';
+  for (const file of files) {
+    showStatus(`Uploading "${file.name}"... (${formatBytes(file.size)})`, 'info');
+    
+    debugLog('Starting upload:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    });
+    
+    try {
+      const metadata = {
+        name: file.name,
+        parents: [FOLDER_ID],
+        mimeType: file.type || 'application/octet-stream'
+      };
+      
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+      
+      const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size';
+      
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: form
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      debugLog('Upload successful:', result);
+      uploadedCount++;
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      debugLog('Upload failed:', error);
+      failedCount++;
+      
+      // Show error for this file but continue with others
+      showStatus(`Failed to upload "${file.name}": ${error.message}`, 'error');
+    }
+  }
   
-  debugLog('Signed out successfully');
-  
-  // Reload files list (public access)
-  loadPublicFiles();
-}  
-  
-// Toggle debug panel
-function toggleDebug() {
-  const debugDiv = document.getElementById('debug-info');
-  debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
+  if (uploadedCount > 0) {
+    showStatus(`✅ Successfully uploaded ${uploadedCount} file(s)${failedCount > 0 ? `, failed: ${failedCount}` : ''}`, 'success');
+    
+    // Clear file input and reload list
+    fileInput.value = '';
+    loadPublicFiles();
+  }
 }
 
-// Initialize when page loads  
+// Delete file from Google Drive
+async function deleteFile(fileId, fileName) {
+  if (!accessToken) {
+    showStatus('Please sign in to delete files.', 'error');
+    return;
+  }
+  
+  if (!confirm(`Are you sure you want to delete "${fileName}"?`)) {
+    return;
+  }
+  
+  try {
+    showStatus(`Deleting "${fileName}"...`, 'info');
+    
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Delete failed: ${response.status}`);
+    }
+    
+    debugLog('Delete successful:', { fileId, fileName });
+    
+    // Remove file from UI
+    const fileElement = document.getElementById(`file-${fileId}`);
+    if (fileElement) {
+      fileElement.style.opacity = '0.5';
+      fileElement.style.textDecoration = 'line-through';
+      setTimeout(() => {
+        fileElement.remove();
+      }, 1000);
+    }
+    
+    showStatus(`✅ Successfully deleted "${fileName}"`, 'success');
+    
+  } catch (error) {
+    console.error('Delete error:', error);
+    debugLog('Delete failed:', error);
+    showStatus(`Failed to delete "${fileName}": ${error.message}`, 'error');
+  }
+}
+
+// Helper function to format file sizes
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+}
+
+// Show status message
+function showStatus(message, type = 'info') {
+  const status = document.getElementById('status');
+  status.textContent = message;
+  status.className = `status-message ${type}`;
+}
+
+// Sign out function
+function signOut() {
+  debugLog('Signing out...');
+  
+  // Revoke access token
+  if (accessToken) {
+    google.accounts.oauth2.revoke(accessToken, () => {
+      debugLog('Access token revoked');
+    });
+  }
+  
+  // Clear tokens and user data
+  accessToken = null;
+  currentUser = null;
+  tokenClient = null;
+  
+  // Reset UI
+  document.getElementById('upload-section').style.display = 'none';
+  document.getElementById('signin-button').style.display = 'block';
+  document.getElementById('user-info').style.display = 'none';
+  showStatus('Signed out successfully', 'success');
+  
+  // Reload files list (public access only)
+  loadPublicFiles();
+}
+
+// Initialize when page loads
 window.onload = function() {
   debugLog('Page loaded, initializing...');
-  initGoogleAuth();
+  gapiLoaded();
+  gisLoaded();
 };
+
+// Expose functions to global scope
+window.signOut = signOut;
+window.uploadToDrive = uploadToDrive;
+window.loadPublicFiles = loadPublicFiles;
+window.deleteFile = deleteFile;
+window.clearDebug = clearDebug;
 </script>  
+
+<div class="container">
+  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <button class="button button-secondary" onclick="signOut()">
+      <span>🚪 Sign Out</span>
+    </button>
+    <button class="button button-success" onclick="loadPublicFiles()">
+      <span>🔄 Refresh Files</span>
+    </button>
+    <button class="button" onclick="document.getElementById('debug-info').style.display = 
+      document.getElementById('debug-info').style.display === 'none' ? 'block' : 'none'">
+      <span>🔧 Toggle Debug</span>
+    </button>
+  </div>
   
-<div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">  
-  <button onclick="signOut()" style="background: #f44336; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">  
-    Sign Out  
-  </button>
-  
-  <button onclick="testDriveAccess()" style="background: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">  
-    Test Connection  
-  </button>
-  
-  <button onclick="loadPublicFiles()" style="background: #2196F3; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">  
-    Refresh Files  
-  </button>
-  
-  <button onclick="toggleDebug()" style="background: #FF9800; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">  
-    Toggle Debug  
-  </button>
-  
-  <p style="margin-top: 10px; font-size: 12px; color: #666;">
-    Folder ID: <code>${FOLDER_ID}</code><br>
-    Client ID: <code>${CLIENT_ID.substring(0, 20)}...</code>
-  </p>
-</div>  
-  
+  <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+    <p>
+      <strong>📝 Instructions:</strong><br>
+      1. Click "Sign in with Google" to manage files<br>
+      2. Select files to upload them to the public folder<br>
+      3. Click on View/Download buttons to access files<br>
+      4. Sign in users must be added as test users in Google Cloud Console
+    </p>
+    <p>
+      <strong>🔧 Configuration:</strong><br>
+      Folder ID: <code>${FOLDER_ID}</code><br>
+      Client ID: <code>${CLIENT_ID.substring(0, 20)}...</code>
+    </p>
+  </div>
+</div>
+
 </body>  
 </html>
