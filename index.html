@@ -5,119 +5,246 @@
   <meta name="google-signin-client_id" content="789202929495-8ga0rfnv1m9ea0g4p48lmfvraa739aa8.apps.googleusercontent.com">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 0 20px;
-    color: #2d3748;
-    background-color: #f8fafc;
-  }
-  
-  h1 {
-    color: #1a365d;
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    border-bottom: 3px solid #4299e1;
-    padding-bottom: 0.5rem;
-  }
-  
-  h2 {
-    color: #2d3748;
-    font-size: 1.5rem;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    padding-left: 0.75rem;
-    border-left: 4px solid #4299e1;
-  }
-  
-  p {
-    margin-bottom: 1rem;
-  }
-  
-  ul {
-    margin-left: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  li {
-    margin-bottom: 0.5rem;
-    position: relative;
-    padding-left: 0.5rem;
-  }
-  
-  li::before {
-    content: "•";
-    color: #4299e1;
-    font-weight: bold;
-    display: inline-block;
-    width: 1em;
-    margin-left: -1em;
-  }
-  
-  strong {
-    color: #1a365d;
-  }
-  
-  a {
-    color: #3182ce;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-  
-  a:hover {
-    color: #2c5282;
-    text-decoration: underline;
-  }
-  
-  hr {
-    margin: 40px 0;
-    border: none;
-    height: 1px;
-    background: linear-gradient(to right, transparent, #cbd5e0, transparent);
-  }
-  
-  .last-updated {
-    background-color: #e6fffa;
-    padding: 0.75rem;
-    border-radius: 8px;
-    border-left: 4px solid #38b2ac;
-    margin-bottom: 2rem;
-  }
-  
-  .contact-info {
-    background-color: #ebf8ff;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #bee3f8;
-  }
-  
-  @media (max-width: 768px) {
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
     body {
-      margin: 20px auto;
-      padding: 0 15px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f7fa;
+      color: #333;
     }
     
-    h1 {
-      font-size: 2rem;
+    h2, h3 {
+      color: #1a73e8;
+      margin-top: 0;
     }
     
-    h2 {
-      font-size: 1.3rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    body {
-      font-size: 0.95rem;
+    .container {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
     }
     
-    h1 {
-      font-size: 1.75rem;
+    .button {
+      background-color: #1a73e8;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
     }
-  }
-</style>
+    
+    .button:hover {
+      background-color: #0d62d9;
+    }
+    
+    .button-secondary {
+      background-color: #f1f3f4;
+      color: #5f6368;
+    }
+    
+    .button-secondary:hover {
+      background-color: #e8eaed;
+    }
+    
+    .button-danger {
+      background-color: #d93025;
+    }
+    
+    .button-danger:hover {
+      background-color: #c5221f;
+    }
+    
+    .button-success {
+      background-color: #188038;
+    }
+    
+    .button-success:hover {
+      background-color: #137333;
+    }
+    
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #fafbfc;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .file-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .file-icon {
+      font-size: 24px;
+      margin-right: 15px;
+      min-width: 40px;
+    }
+    
+    .file-info {
+      flex-grow: 1;
+    }
+    
+    .file-name {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    
+    .file-meta {
+      color: #5f6368;
+      font-size: 12px;
+      display: flex;
+      gap: 15px;
+    }
+    
+    .file-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .action-btn {
+      background: none;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #5f6368;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      background-color: #f8f9fa;
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
+    
+    input[type="file"] {
+      width: 100%;
+      padding: 15px;
+      border: 2px dashed #dadce0;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+    }
+    
+    input[type="file"]:hover {
+      border-color: #1a73e8;
+    }
+    
+    .status-message {
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    
+    .success {
+      background-color: #e6f4ea;
+      color: #137333;
+      border: 1px solid #b7e0c3;
+    }
+    
+    .error {
+      background-color: #fce8e6;
+      color: #c5221f;
+      border: 1px solid #f6c9c5;
+    }
+    
+    .warning {
+      background-color: #fef7e0;
+      color: #b06000;
+      border: 1px solid #fde293;
+    }
+    
+    .info {
+      background-color: #e8f0fe;
+      color: #1a73e8;
+      border: 1px solid #c2d7f0;
+    }
+    
+    .debug-panel {
+      background-color: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .debug-output {
+      max-height: 300px;
+      overflow-y: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #5f6368;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+      
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .file-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>  
 <body>  
 
